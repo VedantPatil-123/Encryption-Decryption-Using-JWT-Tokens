@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>JWE Encryption Demo</title>
+<style>
+    :root {
+        --bg: linear-gradient(135deg, #151516, #150325);
+      --glass-bg: rgba(255, 255, 255, 0.08);
+      --border: rgba(255, 255, 255, 0.2);
+      --text: #fff;
+      --muted: #d1d5db;
+      --btn: #3b82f6;
+      --btn-hover: #2563eb;
+      --result-bg: rgba(255, 255, 255, 0.1);
+    }
+  
+    body {
+      margin: 0;
+      background: var(--bg);
+      font-family: "Segoe UI", sans-serif;
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    body.dark {
+    --bg: linear-gradient(135deg, #f1f1f1, #dcdcdc);
+    --glass-bg: rgba(0, 0, 0, 0.08);
+    --border: rgba(0, 0, 0, 0.2);
+    --text: #111;
+    --muted: #555;
+    --btn: #2563eb;
+    --btn-hover: #1d4ed8;
+    --result-bg: rgba(0, 0, 0, 0.05);
+  }
+  
+    .card {
+      backdrop-filter: blur(16px) saturate(180%);
+      background: var(--glass-bg);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      padding: 45px;
+      width: 114%;
+      max-width: 500px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      transform: translateX(-13%);
+    }
+
+    .toggle {
+    position: fixed;
+    top: 15px;
+    right: 20px;
+    background: var(--glass-bg);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: var(--text);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s ease, transform 0.2s ease;
+    z-index: 999;
+  }
+
+  .toggle:hover {
+    transform: scale(1.05);
+  }
+  
+    h1 {
+      margin: 0;
+      font-size: 1.4rem;
+      font-weight: 600;
+      text-align: center;
+    }
+  
+    p.sub {
+      margin: 4px 0 16px 0;
+      font-size: 0.85rem;
+      color: var(--muted);
+      text-align: center;
+    }
+  
+    label {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 10px;
+      display: block;
+    }
+  
+    textarea,
+    input,
+    select {
+      width: 100%;
+      margin-top: 4px;
+      border: none;
+      border-radius: 10px;
+      padding: 10px;
+      font-size: 0.9rem;
+      background: var(--result-bg);
+      color: var(--text);
+      outline: none;
+      resize: vertical;
+    }
+  
+    textarea {
+      min-height: 60px;
+    }
+  
+    select option {
+      color: black;
+    }
+  
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+  
+    .btn {
+      background: var(--btn);
+      color: #fff;
+      border: none;
+      padding: 10px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      border-radius: 8px;
+      margin-top: 12px;
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.15s ease;
+      transform: translate(1rem, -8px); 
+    }
+
+    .btnn {
+      background: var(--btn);
+      color: #fff;
+      border: none;
+      padding: 10px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      border-radius: 8px;
+      margin-top: 12px;
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.15s ease;
+    }
+
+    .btnn:hover {
+    background: var(--btn-hover);
+    
+    }
+  
+    .btn:hover {
+    background: var(--btn-hover);
+    
+    }
+  
+    .result {
+      background: var(--result-bg);
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      margin-top: 10px;
+      word-break: break-word;
+    }
+  
+    .copy {
+      background: transparent;
+      border: 1px solid var(--muted);
+      color: var(--muted);
+      padding: 6px 8px;
+      font-size: 0.75rem;
+      border-radius: 6px;
+      margin-top: 6px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+  
+    .copy:hover {
+      background: var(--result-bg);
+    }
+  </style>
+  
+  
+</head>
+<body>
+  <div class="wrap">
+    <button class="toggle" id="themeBtn" title="Toggle theme">🌙</button>
+    <div class="card">
+      <h1>🔒 JWE Encryption</h1>
+      <img id="qrImage" style="max-width:200px; margin-top:10px; display:none;" />
+
+      <label for="plaintext">Plaintext</label>
+      <textarea id="plaintext" placeholder="Type text to encrypt..."></textarea>
+
+      <div class="row">
+        <div>
+          <label for="exp">Expires In</label>
+          <select id="exp">
+            <option value="45s" selected>45 Seconds</option>
+            <option value="1h" >1 hour</option>
+            <option value="1d">1 day</option>
+          </select>
+        </div>
+        <div>
+          <label>&nbsp;</label>
+          <button class="btn" id="encryptBtn">Encrypt →</button>
+        </div>
+      </div>
+
+      <label for="token">JWE Token</label>
+      <textarea id="token" placeholder="Encrypted token will appear here..."></textarea>
+      <button class="copy" id="copyToken">Copy token</button>
+
+      <div class="row">
+        <div>
+          <label>&nbsp;</label>
+          <button class="btnn" id="decryptBtn">← Decrypt</button>
+        </div>
+        <div></div>
+      </div>
+
+      <label>Result</label>
+      <div class="result" id="result">Waiting…</div>
+      <div class="muted"></div>
+    </div>
+  </div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const API = (path) => `${location.origin}${path}`;
+
+$("themeBtn").addEventListener("click", () => {
+  document.body.classList.toggle("dark");
+  $("themeBtn").textContent = document.body.classList.contains("dark") ? "☀️" : "🌙";
+});
+
+$("encryptBtn").addEventListener("click", async () => {
+  const plaintext = $("plaintext").value.trim();
+  const expiresIn = $("exp").value;
+  if (!plaintext) return setResult("⚠️ Enter plaintext first.");
+
+  setResult("Encrypting…");
+  try {
+    const res = await fetch(API("/api/encrypt"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ plaintext, expiresIn })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "encryption failed");
+    $("token").value = data.token;
+    setResult("✅ Encrypted. Token placed above.");
+  } catch (e) {
+    setResult("❌ " + e.message);
+  }
+});
+
+$("decryptBtn").addEventListener("click", async () => {
+  const token = $("token").value.trim();
+  if (!token) return setResult("⚠️ Paste a JWE token to decrypt.");
+
+  setResult("Decrypting…");
+  try {
+    const res = await fetch(API("/api/decrypt"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "decryption failed");
+    setResult(`🔓 Plaintext:\n${data.plaintext}\n\n(meta: alg=${data.alg}, enc=${data.enc})`);
+  } catch (e) {
+    setResult("❌ " + e.message);
+  }
+});
+
+$("copyToken").addEventListener("click", async () => {
+  const v = $("token").value.trim();
+  if (!v) return setResult("⚠️ Nothing to copy.");
+  await navigator.clipboard.writeText(v);
+  setResult("📋 Token copied to clipboard.");
+}); 
+
+function setResult(text){ $("result").textContent = text; }
+</script>
+</body>
+</html>
